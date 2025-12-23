@@ -1,2 +1,14 @@
-/ai-agent
-/Backend-Laravel
+# Python
+venv/
+__pycache__/
+*.pyc
+# Node
+node_modules/
+# PHP Laravel
+vendor/
+# Environment
+.env
+.env.*
+!.env.example
+# Build
+dist/
