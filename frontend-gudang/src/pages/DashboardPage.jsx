@@ -1,11 +1,71 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
+import { api } from '../services/api';
 
 export default function DashboardPage() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const [recentActivity, setRecentActivity] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Helper function to format relative time
+    const getRelativeTime = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMins / 60);
+        const diffDays = Math.floor(diffHours / 24);
+
+        if (diffMins < 1) return 'Baru saja';
+        if (diffMins < 60) return `${diffMins} menit lalu`;
+        if (diffHours < 24) return `${diffHours} jam lalu`;
+        return `${diffDays} hari lalu`;
+    };
+
+    // Fetch recent activity on mount
+    useEffect(() => {
+        const fetchActivity = async () => {
+            try {
+                const data = await api.getActivityLog();
+                // Take only the 5 most recent items
+                setRecentActivity(data.slice(0, 5));
+            } catch (error) {
+                console.error('Failed to fetch activity:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchActivity();
+    }, []);
+
+    // Helper to get icon and colors based on action type
+    const getActivityStyle = (type) => {
+        switch (type?.toLowerCase()) {
+            case 'masuk':
+            case 'in':
+                return {
+                    icon: 'add_box',
+                    bgClass: 'bg-blue-100 dark:bg-blue-900/30',
+                    textClass: 'text-primary'
+                };
+            case 'keluar':
+            case 'out':
+                return {
+                    icon: 'remove_circle',
+                    bgClass: 'bg-orange-100 dark:bg-orange-900/30',
+                    textClass: 'text-orange-600 dark:text-orange-400'
+                };
+            default:
+                return {
+                    icon: 'inventory_2',
+                    bgClass: 'bg-green-100 dark:bg-green-900/30',
+                    textClass: 'text-green-600 dark:text-green-400'
+                };
+        }
+    };
 
     return (
         <MainLayout>
@@ -92,52 +152,50 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Recent Activity Section */}
+                {/* Recent Activity Section - Dynamic */}
                 <div className="flex flex-col gap-4">
-                    <h3 className="text-lg font-bold text-[#111418] dark:text-white">Recent Voice Commands</h3>
+                    <h3 className="text-lg font-bold text-[#111418] dark:text-white">Recent Activity</h3>
                     <div className="rounded-xl border border-[#e5e7eb] dark:border-[#233648] bg-surface-light dark:bg-surface-dark overflow-hidden">
                         <div className="flex flex-col">
-                            {/* Item 1 */}
-                            <div className="flex items-center justify-between p-4 border-b border-[#e5e7eb] dark:border-[#233648] hover:bg-[#f9fafb] dark:hover:bg-[#1f2937] transition-colors cursor-pointer">
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg text-primary">
-                                        <span className="material-symbols-outlined">add_box</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="font-semibold text-[#111418] dark:text-white">Stock In: Shoes Nike Air (Size 42)</span>
-                                        <span className="text-xs text-[#637588] dark:text-[#92adc9]">Command: "Tambah stok sepatu nike air ukuran 42 sebanyak 50"</span>
-                                    </div>
+                            {loading ? (
+                                <div className="p-8 text-center text-[#637588] dark:text-[#92adc9]">
+                                    <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                                    <p className="mt-2">Memuat aktivitas...</p>
                                 </div>
-                                <span className="text-xs text-[#637588] dark:text-[#92adc9]">2 mins ago</span>
-                            </div>
-
-                            {/* Item 2 */}
-                            <div className="flex items-center justify-between p-4 border-b border-[#e5e7eb] dark:border-[#233648] hover:bg-[#f9fafb] dark:hover:bg-[#1f2937] transition-colors cursor-pointer">
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg text-orange-600 dark:text-orange-400">
-                                        <span className="material-symbols-outlined">search</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="font-semibold text-[#111418] dark:text-white">Check Location: Red T-Shirt</span>
-                                        <span className="text-xs text-[#637588] dark:text-[#92adc9]">Command: "Dimana lokasi kaos merah?"</span>
-                                    </div>
+                            ) : recentActivity.length === 0 ? (
+                                <div className="p-8 text-center text-[#637588] dark:text-[#92adc9]">
+                                    <span className="material-symbols-outlined text-4xl mb-2">inbox</span>
+                                    <p>Belum ada aktivitas</p>
                                 </div>
-                                <span className="text-xs text-[#637588] dark:text-[#92adc9]">15 mins ago</span>
-                            </div>
-
-                            {/* Item 3 */}
-                            <div className="flex items-center justify-between p-4 hover:bg-[#f9fafb] dark:hover:bg-[#1f2937] transition-colors cursor-pointer">
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg text-green-600 dark:text-green-400">
-                                        <span className="material-symbols-outlined">check_circle</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="font-semibold text-[#111418] dark:text-white">Verify: Shipment #4022</span>
-                                        <span className="text-xs text-[#637588] dark:text-[#92adc9]">Command: "Verifikasi pengiriman 4022 sudah siap"</span>
-                                    </div>
-                                </div>
-                                <span className="text-xs text-[#637588] dark:text-[#92adc9]">1 hour ago</span>
-                            </div>
+                            ) : (
+                                recentActivity.map((activity, index) => {
+                                    const style = getActivityStyle(activity.type);
+                                    const isLast = index === recentActivity.length - 1;
+                                    return (
+                                        <div
+                                            key={activity.id || index}
+                                            className={`flex items-center justify-between p-4 ${!isLast ? 'border-b border-[#e5e7eb] dark:border-[#233648]' : ''} hover:bg-[#f9fafb] dark:hover:bg-[#1f2937] transition-colors cursor-pointer`}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className={`${style.bgClass} p-2 rounded-lg ${style.textClass}`}>
+                                                    <span className="material-symbols-outlined">{style.icon}</span>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="font-semibold text-[#111418] dark:text-white">
+                                                        {activity.type === 'masuk' ? 'Stock In' : 'Stock Out'}: {activity.product_name || activity.product?.name || 'Unknown Product'}
+                                                    </span>
+                                                    <span className="text-xs text-[#637588] dark:text-[#92adc9]">
+                                                        {activity.notes || `Qty: ${activity.quantity}`} • By: {activity.user_name || activity.user?.name || 'System'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <span className="text-xs text-[#637588] dark:text-[#92adc9] whitespace-nowrap">
+                                                {getRelativeTime(activity.created_at)}
+                                            </span>
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
                     </div>
                 </div>
@@ -145,3 +203,4 @@ export default function DashboardPage() {
         </MainLayout>
     );
 }
+
