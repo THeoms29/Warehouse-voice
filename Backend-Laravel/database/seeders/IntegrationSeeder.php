@@ -38,21 +38,29 @@ class IntegrationSeeder extends Seeder
         );
 
         // Create Dummy History Logs
-        StockMovement::create([
-            'product_id' => $product1->id,
-            'user_id' => $user->id,
-            'type' => 'masuk',
-            'quantity' => 50,
-            'notes' => 'Restock bulanan'
-        ]);
+        StockMovement::firstOrCreate(
+            [
+                'product_id' => $product1->id,
+                'user_id' => $user->id,
+                'notes' => 'Restock bulanan'
+            ],
+            [
+                'type' => 'masuk',
+                'quantity' => 50,
+            ]
+        );
 
-        StockMovement::create([
-            'product_id' => $product2->id,
-            'user_id' => $user->id,
-            'type' => 'keluar',
-            'quantity' => 10,
-            'notes' => 'Order #ORD-2024-001'
-        ]);
+        StockMovement::firstOrCreate(
+            [
+                'product_id' => $product2->id,
+                'user_id' => $user->id,
+                'notes' => 'Order #ORD-2024-001'
+            ],
+            [
+                'type' => 'keluar',
+                'quantity' => 10,
+            ]
+        );
 
         $this->command->info('Integration data seeded!');
     }

@@ -12,7 +12,7 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-       $products = [
+        $products = [
             ['sku' => 'HDMI-2M', 'name' => 'Kabel HDMI 2 Meter', 'location' => 'Rak A1', 'stock_qty' => 50],
             ['sku' => 'MNTR-LG-24', 'name' => 'Monitor LG 24 Inch', 'location' => 'Rak B2', 'stock_qty' => 15],
             ['sku' => 'MSE-LOGI-M', 'name' => 'Mouse Logitech M170', 'location' => 'Rak A2', 'stock_qty' => 30],
@@ -26,7 +26,14 @@ class ProductSeeder extends Seeder
         ];
 
         foreach ($products as $product) {
-            Product::create($product);
-        } 
+            Product::firstOrCreate(
+                ['sku' => $product['sku']],
+                [
+                    'name' => $product['name'],
+                    'location' => $product['location'],
+                    'stock_qty' => $product['stock_qty'],
+                ]
+            );
+        }
     }
 }
