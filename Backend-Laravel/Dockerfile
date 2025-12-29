@@ -28,4 +28,4 @@ RUN chmod -R 775 storage bootstrap/cache
 # Expose port
 EXPOSE 8080
 # Start command
-CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8080"]
+CMD ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=8080"]
