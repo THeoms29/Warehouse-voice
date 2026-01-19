@@ -23,7 +23,6 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Generate a simple token (mock for now, or use Sanctum if available)
         $token = 'mock-token-' . uniqid();
 
         return response()->json([
@@ -31,8 +30,8 @@ class AuthController extends Controller
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
-                'role' => 'Staff', // Hardcoded role for now
-                'warehouse_id' => 1 // Hardcoded warehouse for now
+                'role' => 'Staff',
+                'warehouse_id' => 1
             ],
             'token' => $token
         ]);
